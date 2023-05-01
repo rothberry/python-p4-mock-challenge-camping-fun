@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from ipdb import set_trace
 
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, abort
 from flask_migrate import Migrate
 from flask_restful import Api, Resource
 
@@ -30,15 +30,31 @@ class Campers(Resource):
         # print(campers)
         return make_response(campers, 200)
     
+    # create
+    def post(self):
+        try:
+            form_data = request.get_json()
+            age, name = form_data.values()
+            new_camper = Camper(age=age, name=name)
+            db.session.add(new_camper)
+            db.session.commit()
+            return make_response(new_camper.my_to_dict(), 201)
+        except ValueError as err:
+            return make_response({"error": err.args[0]}, 400)
+
 api.add_resource(Campers, "/campers")
 
 class CamperWithID(Resource):
     # show
     def get(self, id):
         camper = Camper.query.filter_by(id=id).first()
-        return make_response(camper.to_dict(), 200)
+        if not camper:
+            abort(404, {"error": f"Camper of id: {id} not found"})
+        return make_response(camper.to_dict_with_assocication(), 200)
 
 api.add_resource(CamperWithID, "/campers/<int:id>")
+
+
 
 
 

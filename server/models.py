@@ -29,6 +29,8 @@ class Activity(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
+    signups = db.relationship("Signup", backref="activity")
+
 
 class Signup(db.Model, SerializerMixin):
     __tablename__ = 'signups'
@@ -40,9 +42,15 @@ class Signup(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
+    def my_to_dict(self):
+        return {
+            "id": self.id,
+            "time": self.time,
+        }
+
     @validates("time")
     def validates_time(self, key, value):
-        if value not in range(0, 23):
+        if value not in range(0, 24):
             raise ValueError("Must be between 0 and 23")
         return value
 
@@ -56,12 +64,19 @@ class Camper(db.Model, SerializerMixin):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
+    signups = db.relationship("Signup", backref="camper")
+
     def my_to_dict(self):
         return {
             "id": self.id,
             "name": self.name,
             "age": self.age
         }
+    
+    def to_dict_with_assocication(self):
+        camper_dict = self.my_to_dict()
+        camper_dict["signups"] = [ signup.activity.to_dict() for signup in self.signups]
+        return camper_dict
 
     @validates("name")
     def validates_name(self, key, value):
@@ -71,7 +86,7 @@ class Camper(db.Model, SerializerMixin):
 
     @validates('age')
     def validates_age(self, key, value):
-        if value not in range(8, 18):
+        if value not in range(8, 19):
             raise ValueError("Must be between 8 and 18")
         return value
 
