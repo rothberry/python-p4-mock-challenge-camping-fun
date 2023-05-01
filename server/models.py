@@ -42,9 +42,10 @@ class Signup(db.Model, SerializerMixin):
 
     @validates("time")
     def validates_time(self, key, value):
-        if value not in range(0,23):
+        if value not in range(0, 23):
             raise ValueError("Must be between 0 and 23")
         return value
+
 
 class Camper(db.Model, SerializerMixin):
     __tablename__ = 'campers'
@@ -54,6 +55,13 @@ class Camper(db.Model, SerializerMixin):
     age = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+
+    def my_to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "age": self.age
+        }
 
     @validates("name")
     def validates_name(self, key, value):
