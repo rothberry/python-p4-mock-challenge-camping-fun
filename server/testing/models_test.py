@@ -6,6 +6,7 @@ from models import db, Activity, Signup, Camper
 class TestModels:
     '''SQLAlchemy models in models.py'''
 
+    # @pytest.mark.skip(reason="IDK")
     def test_validates_camper_name(self):
         '''require campers to have names.'''
 
